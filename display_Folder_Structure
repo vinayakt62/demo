@@ -1,0 +1,37 @@
+
+#include <iostream>
+#include <string>
+#include <dirent.h>
+#include <sys/stat.h>
+
+void displayFolderStructure(const std::string& folderPath, int depth = 0) {
+
+    DIR* dir = opendir(folderPath.c_str());
+    if (!dir) {
+        std::cerr << "Error accessing folder: " << folderPath << std::endl;
+        return;
+    }
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        std::string entryName = entry->d_name;
+        if (entryName == "." || entryName == "..") {
+            continue;
+        }
+        std::string indent(depth * 2, ' ');
+        std::string fullPath = folderPath + "/" + entryName;
+        struct stat info;
+        if (stat(fullPath.c_str(), &info) == 0 && S_ISDIR(info.st_mode)) {
+            std::cout << indent << "[DIR] " << entryName << std::endl;
+            displayFolderStructure(fullPath, depth + 1);
+        } else {
+            std::cout << indent << "  -  " << entryName << std::endl;
+        }
+    }
+    closedir(dir);
+}
+
+int main() {
+
+    displayFolderStructure("/home/kimaya/Desktop");
+    return 0;
+}
